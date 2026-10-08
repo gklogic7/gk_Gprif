@@ -1,0 +1,27 @@
+{
+  "app": "gprif-theme",
+  "version": 1,
+  "name": "gop",
+  "settings": {
+    "base": "system",
+    "gType": "linear",
+    "font": "system",
+    "fontName": "",
+    "cBg": "#2e2e2e",
+    "cInk": "#ffffff",
+    "cAccent": "#e60050",
+    "cOnAccent": "#f1ff33",
+    "g1": "#4f46e5",
+    "g2": "#ec4899",
+    "g3": "#f59e0b",
+    "customTheme": true,
+    "gHeader": false,
+    "gPage": false,
+    "gBtn": false,
+    "gUse3": false,
+    "gAngle": 135,
+    "gPageStrength": 30,
+    "fontScale": 100,
+    "radius": 14
+  }
+}

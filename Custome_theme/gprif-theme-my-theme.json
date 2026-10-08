@@ -1,0 +1,27 @@
+{
+  "app": "gprif-theme",
+  "version": 1,
+  "name": "My theme",
+  "settings": {
+    "base": "dracula",
+    "gType": "linear",
+    "font": "system",
+    "fontName": "",
+    "cBg": "#2e2e2e",
+    "cInk": "#ffffff",
+    "cAccent": "#e60050",
+    "cOnAccent": "#f1ff33",
+    "g1": "#000000",
+    "g2": "#ff0080",
+    "g3": "#f59e0b",
+    "customTheme": true,
+    "gHeader": true,
+    "gPage": false,
+    "gBtn": true,
+    "gUse3": true,
+    "gAngle": 135,
+    "gPageStrength": 30,
+    "fontScale": 100,
+    "radius": 14
+  }
+}
