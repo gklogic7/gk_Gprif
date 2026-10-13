@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#000000">
+    <title>Gprif — Sprite Sheet to GIF</title>
+
+    <!-- Primary Meta Tags -->
+    <meta name="title" content="Gprif — Sprite Sheet to GIF">
+    <meta name="description" content="Gprif: free web tool that turns sprite sheets into animated GIFs">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Gprif — Sprite Sheet to GIF">
+    <meta property="og:description" content="Free web tool that turns sprite sheets into animated GIFs">
+    <meta property="og:image" content="assets/siteOGImage.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="Gprif — Sprite Sheet to GIF">
+    <meta property="twitter:description" content="Free web tool that turns sprite sheets into animated GIFs">
+    <meta property="twitter:image" content="assets/siteOGImage.png">
+
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- Include the locally saved gif.js library -->
+    <script src="gif.js"></script>
+</head>
+<body>
+    <header class="site-header">
+        <div class="site-header-inner">
+            <h1 class="brand">Gprif</h1>
+            <p class="tagline">Turn sprite sheets into animated GIFs. Free, fast, and entirely in your browser.</p>
+        </div>
+    </header>
+
+    <main class="app">
+        <section class="card upload-group">
+            <label for="spriteUpload" id="spriteUploadLabel">Upload sprite sheet</label>
+            <input type="file" id="spriteUpload" accept="image/*">
+        </section>
+
+        <div class="main-layout">
+            <div class="controls-column">
+                <section class="card">
+                    <div class="section-header"><h2>Settings</h2></div>
+                    <div class="param-grid">
+                        <div class="input-group">
+                            <label for="rows">Number of rows</label>
+                            <input type="number" id="rows" value="4" min="1" inputmode="numeric">
+                        </div>
+
+                        <div class="input-group">
+                            <label for="cols">Number of columns</label>
+                            <input type="number" id="cols" value="4" min="1" inputmode="numeric">
+                        </div>
+
+                        <div class="input-group wide">
+                            <label for="frameDelay">Frame delay (ms)</label>
+                            <input type="number" id="frameDelay" value="150" min="10" inputmode="numeric">
+                        </div>
+
+                        <p class="param-group-title">Frame offsets (px)</p>
+
+                        <div class="input-group">
+                            <label for="offsetTop">Offset top</label>
+                            <input type="number" id="offsetTop" value="0" min="0" inputmode="numeric">
+                        </div>
+
+                        <div class="input-group">
+                            <label for="offsetBottom">Offset bottom</label>
+                            <input type="number" id="offsetBottom" value="0" min="0" inputmode="numeric">
+                        </div>
+
+                        <div class="input-group">
+                            <label for="offsetLeft">Offset left</label>
+                            <input type="number" id="offsetLeft" value="0" min="0" inputmode="numeric">
+                        </div>
+
+                        <div class="input-group">
+                            <label for="offsetRight">Offset right</label>
+                            <input type="number" id="offsetRight" value="0" min="0" inputmode="numeric">
+                        </div>
+                    </div>
+                </section>
+
+                <button id="generateBtn" disabled>Generate GIF</button>
+                <div id="statusText" class="status hidden"></div>
+                <progress id="progressBar" value="0" max="100" class="hidden"></progress>
+            </div>
+
+            <div class="preview-column">
+                <div id="previewContainer" class="card soft hidden">
+                    <div class="section-header">
+                        <h2>Sprite sheet preview</h2>
+                    </div>
+                    <div class="preview-wrapper">
+                        <img id="spritePreview" class="preview" alt="Sprite sheet preview">
+                        <canvas id="spritePreviewOverlay" class="preview"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <section id="resultContainer" class="card hidden">
+            <div class="section-header">
+                <h2>Generated GIF</h2>
+            </div>
+            <img id="gifOutput" alt="Generated GIF">
+            <a id="downloadLink" class="hidden">
+                <button class="download-btn" type="button">Download GIF</button>
+            </a>
+        </section>
+
+        <section id="framePreview" class="card soft hidden">
+            <div class="section-header">
+                <h2>Extracted frames</h2>
+            </div>
+            <div class="frames" id="frames"></div>
+        </section>
+    </main>
+
+    <canvas id="tempCanvas" class="hidden"></canvas>
+
+    <div id="notesDiv">
+        <div id="textBox">
+            <h2 id="aboutText">About Gprif</h2>
+            <div class="example-row">
+                <img class="example-image" src="assets/siteOGImage.png" alt="Example sprite sheet">
+                <img class="example-image" src="assets/sprite-animation.gif" alt="Example animation">
+            </div>
+            <p>Gprif is a free web tool that turns sprite sheets into animated GIFs. Useful for video game creators and animators.</p>
+            <p>Upload your sprite sheet image, then use the controls to set row / column count, frame duration, and image offset margins.</p>
+            <p>The tool then converts your sprite sheet into a GIF file, right in your browser. Nothing is uploaded to a server.</p>
+            <p>Free and open source (MIT license), with no paywalls or premium options. Use it for personal or commercial projects.</p>
+            <p>Built with vanilla JavaScript, HTML5 canvas, and CSS. GIF creation uses the gif.js library by Johan Nordberg. Gprif is based on the open source <a href="https://github.com/collidingScopes/spritesheet-to-gif" target="_blank" rel="noopener">Sprite Sheet to GIF</a> project by Alan (collidingScopes).</p>
+            <p class="coffee">If you found this useful, you can support the original author:<br>
+                <a href="https://www.buymeacoffee.com/stereoDrift" target="_blank" rel="noopener"><img src="https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png" alt="Buy Me A Coffee"></a></p>
+            <p>Other free / open source projects by the original author:</p>
+            <ul>
+              <li><a href="https://collidingScopes.github.io/particular-drift" target="_blank" rel="noopener">Particular Drift</a>: turn photos into flowing particle animations</li>
+              <li><a href="https://collidingScopes.github.io/liquid-logo" target="_blank" rel="noopener">Liquid Logo</a>: turn logos and icons into liquid metal animations</li>
+              <li><a href="https://collidingScopes.github.io/ascii" target="_blank" rel="noopener">Video-to-ASCII</a>: turn videos into ASCII pixel art</li>
+              <li><a href="https://collidingScopes.github.io/shimmer" target="_blank" rel="noopener">Shape Shimmer</a>: turn photos into funky wave animations</li>
+              <li><a href="https://collidingScopes.github.io" target="_blank" rel="noopener">Colliding Scopes</a>: turn photos into kaleidoscope animations</li>
+              <li><a href="https://manual-brick-breaker.netlify.app" target="_blank" rel="noopener">Manual Brick Breaker</a>: play brick breaker by waving your hands around</li>
+            </ul>
+        </div>
+    </div>
+
+    <footer id="linksDiv">
+        <div id="infoMenuTable">
+            <button id="gitHubButton" class="socialMediaButton" aria-label="GitHub"><a href="https://github.com/collidingScopes/spritesheet-to-gif" target="_blank" rel="noopener"><i class="fa-brands fa-github"></i></a></button>
+            <button id="coffeeButton" class="socialMediaButton" aria-label="Support"><a href="https://www.buymeacoffee.com/stereoDrift" target="_blank" rel="noopener"><i class="fa-solid fa-heart"></i></a></button>
+            <button id="instagramButton" class="socialMediaButton" aria-label="Instagram"><a href="https://www.instagram.com/stereo.drift/" target="_blank" rel="noopener"><i class="fa-brands fa-instagram"></i></a></button>
+            <button id="xButton" class="socialMediaButton" aria-label="X"><a class="x-link" href="https://x.com/measure_plan" target="_blank" rel="noopener">𝕏</a></button>
+            <button id="emailButton" class="socialMediaButton" aria-label="Email"><a href="mailto:stereodriftvisuals@gmail.com" rel="noopener"><i class="fa-solid fa-envelope"></i></a></button>
+        </div>
+        <p class="footer-note">Gprif · MIT License</p>
+    </footer>
+
+    <script>
+        // DOM Elements
+        const spriteUpload = document.getElementById('spriteUpload');
+        const generateBtn = document.getElementById('generateBtn');
+        const spritePreview = document.getElementById('spritePreview');
+        const spritePreviewOverlay = document.getElementById('spritePreviewOverlay');
+        const previewContainer = document.getElementById('previewContainer');
+        const resultContainer = document.getElementById('resultContainer');
+        const gifOutput = document.getElementById('gifOutput');
+        const downloadLink = document.getElementById('downloadLink');
+        const tempCanvas = document.getElementById('tempCanvas');
+        const progressBar = document.getElementById('progressBar');
+        const statusText = document.getElementById('statusText');
+        const framePreview = document.getElementById('framePreview');
+        const framesContainer = document.getElementById('frames');
+
+        // Form inputs
+        const rowsInput = document.getElementById('rows');
+        const colsInput = document.getElementById('cols');
+        const frameDelayInput = document.getElementById('frameDelay');
+
+        // Offset inputs
+        const offsetTopInput = document.getElementById('offsetTop');
+        const offsetBottomInput = document.getElementById('offsetBottom');
+        const offsetLeftInput = document.getElementById('offsetLeft');
+        const offsetRightInput = document.getElementById('offsetRight');
+
+        // Variables
+        let spriteSheet = null;
+
+        // Example spritesheet path
+        const exampleSpritesheetPath = 'assets/example-spritesheet.png';
+
+        // Event listeners
+        spriteUpload.addEventListener('change', handleSpriteUpload);
+        generateBtn.addEventListener('click', generateGif);
+
+        // Load example spritesheet on page load
+        window.addEventListener('DOMContentLoaded', loadExampleSpritesheet);
+
+        // Add event listeners for real-time grid updates
+        rowsInput.addEventListener('input', updateGridLines);
+        colsInput.addEventListener('input', updateGridLines);
+        offsetTopInput.addEventListener('input', updateGridLines);
+        offsetBottomInput.addEventListener('input', updateGridLines);
+        offsetLeftInput.addEventListener('input', updateGridLines);
+        offsetRightInput.addEventListener('input', updateGridLines);
+
+        function resetOutputs() {
+            resultContainer.classList.add('hidden');
+            framesContainer.innerHTML = '';
+            framePreview.classList.add('hidden');
+        }
+
+        function handleSpriteUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    spriteSheet = img;
+                    spritePreview.src = img.src;
+                    previewContainer.classList.remove('hidden');
+                    generateBtn.disabled = false;
+
+                    // Set up the overlay canvas to match the sprite sheet size
+                    spritePreviewOverlay.width = img.width;
+                    spritePreviewOverlay.height = img.height;
+
+                    // Draw the grid lines after image is loaded
+                    updateGridLines();
+
+                    // Clear previous results
+                    resetOutputs();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function updateGridLines() {
+            if (!spriteSheet) return;
+
+            // Get current rows and columns values
+            const rows = parseInt(rowsInput.value) || 4;
+            const cols = parseInt(colsInput.value) || 4;
+
+            // Get offset values
+            const offsetTop = parseInt(offsetTopInput.value) || 0;
+            const offsetBottom = parseInt(offsetBottomInput.value) || 0;
+            const offsetLeft = parseInt(offsetLeftInput.value) || 0;
+            const offsetRight = parseInt(offsetRightInput.value) || 0;
+
+            // Calculate effective dimensions after offsets
+            const effectiveWidth = spriteSheet.width - offsetLeft - offsetRight;
+            const effectiveHeight = spriteSheet.height - offsetTop - offsetBottom;
+
+            // Calculate frame dimensions
+            const frameWidth = Math.floor(effectiveWidth / cols);
+            const frameHeight = Math.floor(effectiveHeight / rows);
+
+            // Get canvas context and clear previous drawings
+            const ctx = spritePreviewOverlay.getContext('2d');
+            ctx.clearRect(0, 0, spritePreviewOverlay.width, spritePreviewOverlay.height);
+
+            // Monochrome grid: white line with black outline so it reads on any sprite
+            const strokeGrid = (draw) => {
+                ctx.lineJoin = 'round';
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 5;
+                draw();
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                draw();
+            };
+
+            // Draw outer border to show offset area
+            strokeGrid(() => {
+                ctx.beginPath();
+                ctx.rect(offsetLeft, offsetTop, effectiveWidth, effectiveHeight);
+                ctx.stroke();
+            });
+
+            // Draw vertical lines
+            for (let col = 1; col < cols; col++) {
+                const x = offsetLeft + (col * frameWidth);
+                strokeGrid(() => {
+                    ctx.beginPath();
+                    ctx.moveTo(x, offsetTop);
+                    ctx.lineTo(x, spritePreviewOverlay.height - offsetBottom);
+                    ctx.stroke();
+                });
+            }
+
+            // Draw horizontal lines
+            for (let row = 1; row < rows; row++) {
+                const y = offsetTop + (row * frameHeight);
+                strokeGrid(() => {
+                    ctx.beginPath();
+                    ctx.moveTo(offsetLeft, y);
+                    ctx.lineTo(spritePreviewOverlay.width - offsetRight, y);
+                    ctx.stroke();
+                });
+            }
+        }
+
+        function generateGif() {
+            if (!spriteSheet) return;
+
+            // Get parameters
+            const rows = parseInt(rowsInput.value) || 4;
+            const cols = parseInt(colsInput.value) || 4;
+            const frameDelay = parseInt(frameDelayInput.value) || 150;
+            const quality = 10;
+
+            // Get offset values
+            const offsetTop = parseInt(offsetTopInput.value) || 0;
+            const offsetBottom = parseInt(offsetBottomInput.value) || 0;
+            const offsetLeft = parseInt(offsetLeftInput.value) || 0;
+            const offsetRight = parseInt(offsetRightInput.value) || 0;
+
+            // Calculate effective dimensions after offsets
+            const effectiveWidth = spriteSheet.width - offsetLeft - offsetRight;
+            const effectiveHeight = spriteSheet.height - offsetTop - offsetBottom;
+
+            // Calculate frame dimensions
+            const frameWidth = Math.floor(effectiveWidth / cols);
+            const frameHeight = Math.floor(effectiveHeight / rows);
+
+            // Set up canvas
+            tempCanvas.width = frameWidth;
+            tempCanvas.height = frameHeight;
+            const ctx = tempCanvas.getContext('2d');
+
+            // Show status and progress
+            statusText.textContent = 'EXTRACTING FRAMES...';
+            statusText.classList.remove('hidden');
+            progressBar.classList.remove('hidden');
+            progressBar.value = 0;
+            generateBtn.disabled = true;
+            framesContainer.innerHTML = '';
+            framePreview.classList.remove('hidden');
+
+            // Create GIF
+            const gif = new GIF({
+                workers: 2,
+                quality: quality,
+                width: frameWidth,
+                height: frameHeight,
+                workerScript: 'gif.worker.js'  // Use local worker script
+            });
+
+            // Total number of frames
+            const totalFrames = rows * cols;
+            let framesDone = 0;
+
+            // Process frames row by row, left to right
+            for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < cols; col++) {
+                    // Clear canvas
+                    ctx.clearRect(0, 0, frameWidth, frameHeight);
+
+                    // Calculate source coordinates with offsets
+                    const sourceX = offsetLeft + (col * frameWidth);
+                    const sourceY = offsetTop + (row * frameHeight);
+
+                    // Draw current frame on canvas with offsets applied
+                    ctx.drawImage(
+                        spriteSheet,
+                        sourceX,
+                        sourceY,
+                        frameWidth,
+                        frameHeight,
+                        0,
+                        0,
+                        frameWidth,
+                        frameHeight
+                    );
+
+                    // Add frame to preview
+                    const frameImg = document.createElement('img');
+                    frameImg.src = tempCanvas.toDataURL('image/png');
+                    framesContainer.appendChild(frameImg);
+
+                    // Add frame to GIF
+                    gif.addFrame(ctx, {
+                        copy: true,
+                        delay: frameDelay
+                    });
+
+                    // Update progress
+                    framesDone++;
+                    progressBar.value = (framesDone / totalFrames) * 50; // Save 50% for rendering
+                }
+            }
+
+            // GIF events
+            gif.on('progress', function(p) {
+                progressBar.value = 50 + (p * 50); // Last 50% for rendering
+                statusText.textContent = `RENDERING GIF: ${Math.round(p * 100)}%`;
+            });
+
+            gif.on('finished', function(blob) {
+                // Display the GIF
+                const url = URL.createObjectURL(blob);
+                gifOutput.src = url;
+                downloadLink.href = url;
+                downloadLink.download = 'gprif-animation.gif';
+
+                // Show results
+                resultContainer.classList.remove('hidden');
+                downloadLink.classList.remove('hidden');
+                progressBar.classList.add('hidden');
+                statusText.textContent = 'GIF CREATED SUCCESSFULLY!';
+                generateBtn.disabled = false;
+                resultContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            });
+
+            // Start rendering
+            statusText.textContent = 'RENDERING GIF...';
+            gif.render();
+        }
+
+        function loadExampleSpritesheet() {
+            // Create an Image object
+            const img = new Image();
+
+            // Set up onload handler
+            img.onload = function() {
+                spriteSheet = img;
+                spritePreview.src = img.src;
+                previewContainer.classList.remove('hidden');
+                generateBtn.disabled = false;
+
+                // Set up the overlay canvas to match the sprite sheet size
+                spritePreviewOverlay.width = img.width;
+                spritePreviewOverlay.height = img.height;
+
+                // Draw the grid lines after image is loaded
+                updateGridLines();
+
+                // Clear previous results
+                resetOutputs();
+            };
+
+            // Set source to example spritesheet
+            img.src = exampleSpritesheetPath;
+        }
+    </script>
+</body>
+</html>
